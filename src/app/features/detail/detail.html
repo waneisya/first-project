@@ -1,0 +1,264 @@
+<div class="flex flex-col h-screen bg-slate-50 overflow-hidden font-sans">
+
+  <!--TOP BAR-->
+  <header class="relative flex items-center gap-4 px-6 h-13 min-h-[52px] bg-slate-900 shrink-0 z-10">
+
+    <!-- Back button -->
+    <button
+      (click)="goBack()"
+      pTooltip="Back to Home"
+      tooltipPosition="right"
+      class="flex items-center gap-1.5 px-3 py-1.5 rounded
+             text-slate-300 text-sm font-medium
+             bg-white/8 border border-white/10
+             hover:bg-white/14 hover:text-white
+             transition-colors duration-150 cursor-pointer focus:outline-none
+             focus-visible:ring-2 focus-visible:ring-blue-400">
+      <i class="pi pi-arrow-left text-xs"></i>
+      Back
+    </button>
+
+    <!-- Title + Product ID -->
+    <div class="flex items-center gap-2.5">
+      <span class="text-sm font-semibold tracking-wide text-slate-100">Alerts</span>
+      <span
+        *ngIf="productId"
+        class="px-2 py-0.5 rounded text-xs font-mono tracking-wider
+               text-blue-300 bg-blue-500/20 border border-blue-500/30">
+        {{ productId }}
+      </span>
+    </div>
+
+    <!-- Loading shimmer bar (signature element) -->
+    <div
+      class="absolute bottom-0 left-0 h-0.5 w-full
+             bg-gradient-to-r from-blue-500 via-sky-400 to-blue-500
+             bg-[length:200%_100%]"
+      [class.animate-shimmer]="loading$ | async"
+      [class.opacity-0]="!(loading$ | async)"
+      [class.opacity-100]="loading$ | async">
+    </div>
+  </header>
+
+  <!--FILTER BAR-->
+  <div class="flex items-center justify-between gap-4 px-6 py-3
+              bg-white border-b border-slate-200 shrink-0 flex-wrap">
+
+    <form [formGroup]="dateForm" (ngSubmit)="onApplyFilter()"
+          class="flex items-end gap-3 flex-wrap">
+
+      <!-- Start date -->
+      <div class="flex flex-col gap-1">
+        <label for="startDate"
+               class="text-[11px] font-semibold uppercase tracking-widest text-slate-400">
+          From
+        </label>
+        <p-date-picker
+          inputId="startDate"
+          formControlName="startDate"
+          [showIcon]="true"
+          dateFormat="yy-mm-dd"
+          [maxDate]="dateForm.get('endDate')?.value"
+          placeholder="Start date"
+          appendTo="body"
+          [inputStyleClass]="'!text-sm !py-2 !px-3 !rounded !border-slate-300 focus:!border-blue-500 focus:!ring-1 focus:!ring-blue-500'"
+        />
+        <span
+          *ngIf="dateForm.get('startDate')?.invalid && dateForm.get('startDate')?.touched"
+          class="text-[11px] text-red-500">
+          Required
+        </span>
+      </div>
+
+      <!-- Separator -->
+      <span class="text-slate-400 text-sm pb-2">→</span>
+
+      <!-- End date -->
+      <div class="flex flex-col gap-1">
+        <label for="endDate"
+               class="text-[11px] font-semibold uppercase tracking-widest text-slate-400">
+          To
+        </label>
+        <p-date-picker
+          inputId="endDate"
+          formControlName="endDate"
+          [showIcon]="true"
+          dateFormat="yy-mm-dd"
+          [minDate]="dateForm.get('startDate')?.value"
+          placeholder="End date"
+          appendTo="body"
+          [inputStyleClass]="'!text-sm !py-2 !px-3 !rounded !border-slate-300 focus:!border-blue-500 focus:!ring-1 focus:!ring-blue-500'"
+        />
+        <span
+          *ngIf="dateForm.get('endDate')?.invalid && dateForm.get('endDate')?.touched"
+          class="text-[11px] text-red-500">
+          Required
+        </span>
+      </div>
+
+      <!-- Cross-field error -->
+      <span
+        *ngIf="dateForm.errors?.['startAfterEnd'] && dateForm.touched"
+        class="text-[11px] text-red-500 pb-2 self-end">
+        Start date cannot be after end date
+      </span>
+
+      <!-- Apply button -->
+      <button
+        type="submit"
+        [disabled]="(loading$ | async) ?? false"
+        class="flex items-center gap-2 px-4 py-2 rounded
+               bg-blue-600 hover:bg-blue-700 active:bg-blue-800
+               text-white text-sm font-semibold
+               disabled:opacity-50 disabled:cursor-not-allowed
+               transition-colors duration-150 focus:outline-none
+               focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-1">
+        <i class="pi pi-search text-xs"></i>
+        Apply Filter
+      </button>
+    </form>
+
+    <!-- Total count badge -->
+    <div *ngIf="total$ | async as total"
+         class="flex items-center gap-1.5 text-sm text-slate-500 font-medium tabular-nums">
+      <i class="pi pi-list text-slate-400 text-xs"></i>
+      {{ total | number }} alerts
+    </div>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <main class="flex-1 overflow-hidden flex flex-col px-6 py-5 gap-4">
+
+    <!-- Error banner -->
+    <div
+      *ngIf="(error$ | async) as errMsg"
+      class="flex items-start gap-3 px-4 py-3 rounded-lg
+             bg-red-50 border border-red-200 shrink-0">
+      <i class="pi pi-exclamation-circle text-red-500 mt-0.5 text-base"></i>
+      <div>
+        <p class="text-sm font-semibold text-red-700">Failed to load alerts</p>
+        <p class="text-xs text-red-600 mt-0.5">{{ errMsg }}</p>
+      </div>
+    </div>
+
+    <!-- ── Skeleton loader ── -->
+    <ng-container *ngIf="loading$ | async">
+      <div class="flex-1 rounded-xl border border-slate-200 bg-white overflow-hidden">
+        <!-- Fake header -->
+        <div class="flex gap-6 px-4 py-3 bg-slate-50 border-b border-slate-200">
+          <p-skeleton *ngFor="let c of [1,2,3,4,5]" height="12px" width="80px" styleClass="rounded" />
+        </div>
+        <!-- Fake rows -->
+        <div *ngFor="let row of skeletonRows"
+             class="flex gap-6 px-4 py-3 border-b border-slate-100 last:border-0">
+          <p-skeleton *ngFor="let c of [1,2,3,4,5]"
+                      height="12px"
+                      [width]="c % 2 === 0 ? '110px' : '80px'"
+                      styleClass="rounded" />
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- ── Data / Empty ── -->
+    <ng-container *ngIf="!(loading$ | async)">
+      <ng-container *ngIf="alerts$ | async as alerts">
+
+        <!-- Empty state -->
+        <div
+          *ngIf="alerts.length === 0 && !(error$ | async)"
+          class="flex-1 flex flex-col items-center justify-center gap-3 text-center">
+          <div class="w-14 h-14 rounded-full bg-slate-100 flex items-center justify-center">
+            <i class="pi pi-inbox text-slate-400 text-2xl"></i>
+          </div>
+          <p class="text-base font-semibold text-slate-600">No alerts found</p>
+          <p class="text-sm text-slate-400 max-w-xs">
+            Try adjusting the date range and applying the filter again.
+          </p>
+        </div>
+
+        <!-- Table -->
+        <div
+          *ngIf="alerts.length > 0"
+          class="flex-1 overflow-hidden rounded-xl border border-slate-200 bg-white flex flex-col">
+          <p-table
+            [value]="alerts"
+            [lazy]="true"
+            [paginator]="true"
+            [rows]="currentPageSize"
+            [totalRecords]="(total$ | async) ?? 0"
+            [first]="(((indexNumber$ | async) ?? 1) - 1) * currentPageSize"
+            (onPage)="onPageChange($event)"
+            [rowsPerPageOptions]="[10, 25, 50]"
+            [showCurrentPageReport]="true"
+            currentPageReportTemplate="{first}–{last} of {totalRecords}"
+            [scrollable]="true"
+            scrollHeight="flex"
+            styleClass="text-sm"
+          >
+            <!-- Header -->
+            <ng-template #header>
+              <tr>
+                <th
+                  *ngFor="let col of getColumns(alerts)"
+                  [pTooltip]="col"
+                  tooltipPosition="top"
+                  class="!bg-slate-100 !text-[11px] !font-semibold !uppercase
+                         !tracking-widest !text-slate-600 !py-3 !px-4
+                         !border-b !border-slate-300 whitespace-nowrap">
+                  {{ col }}
+                </th>
+              </tr>
+            </ng-template>
+
+            <!-- Body -->
+            <ng-template #body let-row>
+  <tr class="!bg-blue-950 hover:!bg-blue-900 transition-colors duration-100 group">
+    <td
+      *ngFor="let col of getColumns(alerts)"
+      class="!py-2.5 !px-4 !border-b !border-blue-900
+             !font-mono !text-[13px]">
+      <span
+  *ngIf="col === 'status'; else normalCell"
+  class="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-[11px] font-bold uppercase tracking-wide shadow-sm"
+  [ngClass]="{
+    '!bg-red-500 !text-white': row[col] === 'Down',
+    '!bg-emerald-500 !text-white': row[col] === 'Up'
+  }">
+  <span
+    class="w-1.5 h-1.5 rounded-full !bg-white/80">
+  </span>
+  {{ row[col] }}
+</span>
+      <ng-template #normalCell>
+        <span class="block max-w-[200px] truncate !text-white" [title]="row[col]">
+          {{ row[col] ?? '—' }}
+        </span>
+      </ng-template>
+    </td>
+  </tr>
+</ng-template>
+            <!-- Empty message -->
+            <ng-template #emptymessage>
+              <tr>
+                <td
+                  [attr.colspan]="getColumns(alerts).length"
+                  class="!text-center !text-slate-400 !text-sm !py-10">
+                  No records to display
+                </td>
+              </tr>
+            </ng-template>
+
+            <!-- Paginator -->
+            <ng-template pTemplate="paginatorleft">
+              <span class="text-xs text-slate-400 font-medium tabular-nums">
+                Page {{ (indexNumber$ | async) }}
+              </span>
+            </ng-template>
+          </p-table>
+        </div>
+
+      </ng-container>
+    </ng-container>
+
+  </main>
+</div>

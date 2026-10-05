@@ -1,0 +1,72 @@
+<div class="relative w-full h-full flex flex-col gap-2">
+
+  <!-- Search bar -->
+  <div class="relative shrink-0" style="z-index: 1000">
+    <div class="relative">
+      <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none"></i>
+      <input
+  type="text"
+  [(ngModel)]="searchQuery"
+  placeholder="Search pins..."
+  class="w-full pl-8 pr-8 py-1.5 text-sm border border-slate-200 rounded-lg
+         bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500
+         focus:border-transparent text-slate-700"
+/>
+      <button
+        *ngIf="searchQuery"
+        (click)="clearSearch()"
+        class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400
+               hover:text-slate-600 focus:outline-none">
+        <i class="pi pi-times text-xs"></i>
+      </button>
+    </div>
+
+    <!-- Dropdown -->
+    <div
+      *ngIf="filteredPins.length > 0"
+      class="absolute top-full left-0 right-0 mt-1 bg-white border border-slate-200
+             rounded-lg shadow-lg overflow-hidden"
+      style="z-index: 1001">
+      <ul>
+        <li
+          *ngFor="let pin of filteredPins"
+          (click)="selectPin(pin)"
+          class="px-3 py-2 cursor-pointer hover:bg-slate-50
+                 border-b border-slate-100 last:border-0 transition-colors">
+          <div class="flex items-center gap-2">
+            <i class="pi pi-map-marker text-blue-500 text-xs shrink-0"></i>
+            <div>
+              <div class="font-medium text-slate-800 text-xs">{{ pin.label }}</div>
+              <div class="text-slate-400 text-[11px]">{{ pin.lat.toFixed(4) }}, {{ pin.lng.toFixed(4) }}</div>
+            </div>
+          </div>
+        </li>
+      </ul>
+    </div>
+
+    <!-- No match -->
+    <div
+      *ngIf="searchQuery.trim() && filteredPins.length === 0"
+      class="absolute top-full left-0 mt-1 px-3 py-2 text-xs text-slate-500
+             bg-white border border-slate-200 rounded-lg w-full"
+      style="z-index: 1001">
+      <i class="pi pi-info-circle mr-1"></i>No pins match "{{ searchQuery }}"
+    </div>
+  </div>
+
+  <!-- Map -->
+  <div #mapContainer class="flex-1 rounded-lg overflow-hidden min-h-0" style="z-index: 0"></div>
+
+  <!-- Empty state -->
+  <div
+    *ngIf="!pins || pins.length === 0"
+    class="absolute bottom-0 left-0 right-0 flex justify-center pb-3 pointer-events-none"
+    style="z-index: 999">
+    <div class="bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full
+                border border-slate-200 shadow-sm text-xs text-slate-400 flex items-center gap-1.5">
+      <i class="pi pi-map-marker text-slate-300"></i>
+      No pins yet — use Add Pin to mark locations
+    </div>
+  </div>
+
+</div>

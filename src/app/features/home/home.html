@@ -1,0 +1,164 @@
+<app-navbar/>
+<div class="p-8 flex flex-col gap-6 bg-slate-100 min-h-screen text-slate-800">
+  
+
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-300 pb-5">
+    <div>
+      <h1 class="text-2xl font-bold tracking-tight text-slate-900 flex items-center gap-2">
+        Products
+      </h1>
+      <p class="text-xs text-slate-500 mt-1">Manage and monitor all registered products and services.</p>
+    </div>
+    
+    
+    <p-button 
+      label="Add Product" 
+      icon="pi pi-plus" 
+      styleClass="!bg-blue-950 hover:!bg-blue-900 !text-white !font-semibold !border-none shadow-md shadow-blue-950/20 rounded-lg px-4 py-2.5 text-sm transition-all"
+      (onClick)="openAddModal()" 
+    />
+  </div>
+
+  <!-- Search Bar -->
+  <div class="flex items-center gap-3 w-full max-w-md">
+    <p-iconfield class="w-full">
+      <p-inputicon>
+        <i class="pi pi-search text-slate-400"></i>
+      </p-inputicon>
+      <input
+        pInputText
+        [formControl]="searchControl"
+        placeholder="Search product name or URL..."
+        class="w-full !bg-white !text-slate-800 !border-slate-300 focus:!border-blue-900 focus:!ring-2 focus:!ring-blue-900/20 rounded-lg transition-all placeholder:!text-slate-400 shadow-sm"
+      />
+    </p-iconfield>
+  </div>
+
+  <!-- Skeleton Loader -->
+  <ng-container *ngIf="loading$ | async">
+    <div class="flex flex-col gap-2">
+      <p-skeleton height="2.5rem" *ngFor="let i of skeletonRows" />
+    </div>
+  </ng-container>
+
+  <!-- Error State -->
+  <div
+    *ngIf="error$ | async as error"
+    class="p-4 bg-rose-50 border border-rose-200 rounded-lg text-rose-700 text-sm flex items-center justify-between shadow-sm"
+  >
+    <div class="flex items-center gap-2">
+      <i class="pi pi-exclamation-circle text-rose-500"></i>
+      <span>{{ error }}</span>
+    </div>
+    <p-button
+      label="Retry"
+      severity="danger"
+      [text]="true"
+      size="small"
+      (onClick)="loadProducts()"
+    />
+  </div>
+
+  <!-- Table Container Card -->
+  <div *ngIf="!(loading$ | async)" class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+    <p-table
+      [value]="(products$ | async) ?? []"
+      [paginator]="true"
+      [rows]="10"
+      [rowsPerPageOptions]="[10, 25, 50]"
+      [showCurrentPageReport]="true"
+      currentPageReportTemplate="Showing {first} to {last} of {totalRecords} products"
+      [sortField]="'productName'"
+      [sortOrder]="1"
+      (onSort)="onSort($event)"
+      styleClass="p-datatable-sm [&_.p-paginator]:!bg-blue-950 [&_.p-paginator]:!text-white [&_.p-paginator-current]:!text-slate-200 [&_.p-paginator-element]:!text-slate-200 [&_.p-paginator-element:hover]:!bg-blue-900 [&_.p-paginator-element.p-highlight]:!bg-blue-800 [&_.p-paginator-element.p-highlight]:!text-white [&_.p-dropdown]:!bg-blue-900 [&_.p-dropdown]:!border-blue-800 [&_.p-dropdown-label]:!text-white [&_.p-dropdown-trigger]:!text-white"
+      [tableStyle]="{ 'min-width': '40rem' }"
+    >
+      <!-- Header (Navy Blue) -->
+      <ng-template #header>
+        <tr class="!bg-blue-950 !text-white">
+          <th pSortableColumn="productName" class="w-5/12 !bg-blue-950 !text-white font-semibold text-xs tracking-wider uppercase py-3.5 px-4 border-none">
+            Product Name <p-sort-icon field="productName" />
+          </th>
+          <th pSortableColumn="url" class="w-5/12 !bg-blue-950 !text-white font-semibold text-xs tracking-wider uppercase py-3.5 px-4 border-none">
+            URL <p-sort-icon field="url" />
+          </th>
+          <th class="w-2/12 text-center !bg-blue-950 !text-white font-semibold text-xs tracking-wider uppercase py-3.5 px-4 border-none">
+            Actions
+          </th>
+        </tr>
+      </ng-template>
+
+      <!-- Body (Warna berubah bila ditekan / hover) -->
+      <ng-template #body let-product>
+        <tr class="!bg-white hover:!bg-slate-50 border-b border-slate-200 transition-colors">
+          
+         <td>
+  <span
+    class="text-blue-600 cursor-pointer hover:underline font-medium"
+    (click)="goToDetail(product)"
+  >
+    {{ product.productName }}
+  </span>
+</td>
+
+          <!-- URL Link -->
+          <td class="py-3.5 px-4 !bg-white font-mono text-xs">
+            <a 
+              [href]="product.url" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              class="text-blue-600 hover:text-blue-800 active:text-indigo-900 hover:underline transition-colors break-all"
+            >
+              {{ product.url }}
+            </a>
+          </td>
+
+          <!-- Actions -->
+          <td class="py-3.5 px-4 !bg-white">
+            <div class="flex justify-center items-center gap-1">
+              <p-button
+                icon="pi pi-pencil"
+                [text]="true"
+                size="small"
+                styleClass="!text-slate-600 hover:!text-blue-900 hover:!bg-slate-200 active:!bg-blue-100 rounded-lg transition-all"
+                pTooltip="Edit product"
+                tooltipPosition="top"
+                (onClick)="openEditModal(product)"
+              />
+              <p-button
+                icon="pi pi-trash"
+                [text]="true"
+                size="small"
+                styleClass="!text-slate-400 hover:!text-rose-600 hover:!bg-rose-100 active:!bg-rose-200 rounded-lg transition-all"
+                pTooltip="Remove product"
+                tooltipPosition="top"
+                (onClick)="confirmRemove(product)"
+              />
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+
+      <!-- Empty State -->
+      <ng-template #emptymessage>
+        <tr class="!bg-white">
+          <td colspan="3" class="text-center text-slate-400 py-12 text-sm !bg-white">
+            No products found.
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+
+  <!-- Product Modal -->
+  <app-product-modal
+    [(visible)]="modalVisible"
+    [mode]="modalMode"
+    [product]="selectedProduct"
+    (save)="onModalSave($event)"
+  />
+
+  <!-- Confirm Dialog -->
+  <p-confirm-dialog />
+</div>

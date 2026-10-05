@@ -1,0 +1,117 @@
+<div class="min-h-screen flex flex-col items-center justify-center px-3 bg-gradient-to-br from-slate-100 to-slate-200">
+    <div class="bg-white rounded-3xl shadow-xl hover:shadow-2xl transition-shadow duration-300 p-10 w-full sm:w-96">
+
+        <div class="flex justify-center mb-4">
+            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-slate-800 to-slate-950 flex items-center justify-center shadow-lg shadow-slate-300 border border-slate-700/20">
+                <i class="pi pi-user-plus text-white text-xl"></i>
+            </div>
+        </div>
+
+        <h1 class="text-center text-3xl font-bold mb-1 text-slate-800 tracking-wide">Register Page</h1>
+        <p class="text-center text-sm text-slate-400 mb-8">Create your account</p>
+
+        <div pFocusTrap class="w-full flex flex-col gap-4">
+            <p-iconfield>
+                <p-inputicon>
+                    <i class="pi pi-user text-slate-700"></i>
+                </p-inputicon>
+                <input
+                    type="text"
+                    pInputText
+                    id="username"
+                    [(ngModel)]="username"
+                    name="username"
+                    placeholder="Username"
+                    [pAutoFocus]="true"
+                    [fluid]="true"
+                    class="!bg-slate-50 !text-slate-900 !font-semibold placeholder:!text-slate-500 !border-slate-300 focus:!border-slate-800 focus:!ring-2 focus:!ring-slate-800/20 transition-all rounded-xl"
+                />
+            </p-iconfield>
+
+            <p-iconfield>
+                <p-inputicon>
+                    <i class="pi pi-envelope text-slate-700"></i>
+                </p-inputicon>
+                <input
+                    type="email"
+                    pInputText
+                    id="email"
+                    [(ngModel)]="email"
+                    name="email"
+                    placeholder="Email"
+                    [fluid]="true"
+                    class="!bg-slate-50 !text-slate-900 !font-semibold placeholder:!text-slate-500 !border-slate-300 focus:!border-slate-800 focus:!ring-2 focus:!ring-slate-800/20 transition-all rounded-xl"
+                />
+            </p-iconfield>
+
+            <p-iconfield>
+                <p-inputicon>
+                    <i class="pi pi-phone text-slate-700"></i>
+                </p-inputicon>
+                <input
+                    type="tel"
+                    pInputText
+                    id="phoneNumber"
+                    [(ngModel)]="phoneNumber"
+                    name="phoneNumber"
+                    placeholder="Phone Number"
+                    [fluid]="true"
+                    class="!bg-slate-50 !text-slate-900 !font-semibold placeholder:!text-slate-500 !border-slate-300 focus:!border-slate-800 focus:!ring-2 focus:!ring-slate-800/20 transition-all rounded-xl"
+                />
+            </p-iconfield>
+
+            <p-iconfield>
+                <p-inputicon>
+                    <i class="pi pi-lock text-slate-700"></i>
+                </p-inputicon>
+                <input
+                    type="password"
+                    pInputText
+                    id="password"
+                    [(ngModel)]="password"
+                    name="password"
+                    placeholder="Password"
+                    [fluid]="true"
+                    class="!bg-slate-50 !text-slate-900 !font-semibold placeholder:!text-slate-500 !border-slate-300 focus:!border-slate-800 focus:!ring-2 focus:!ring-slate-800/20 transition-all rounded-xl"
+                />
+            </p-iconfield>
+
+            <p-iconfield>
+                <p-inputicon>
+                    <i class="pi pi-lock text-slate-700"></i>
+                </p-inputicon>
+                <input
+                    type="password"
+                    pInputText
+                    id="confirmPassword"
+                    [(ngModel)]="confirmPassword"
+                    name="confirmPassword"
+                    placeholder="Confirm Password"
+                    [fluid]="true"
+                    class="!bg-slate-50 !text-slate-900 !font-semibold placeholder:!text-slate-500 !border-slate-300 focus:!border-slate-800 focus:!ring-2 focus:!ring-slate-800/20 transition-all rounded-xl"
+                />
+            </p-iconfield>
+
+            @if (errorMessage) {
+                <p-message severity="error">{{ errorMessage }}</p-message>
+            }
+
+            @if (successMessage) {
+                <p-message severity="success">{{ successMessage }}</p-message>
+            }
+
+            <p class="text-center text-sm text-slate-500 whitespace-nowrap">
+                Already have an account? <a routerLink="/login" class="text-slate-800 font-bold hover:underline cursor-pointer">Login</a>
+            </p>
+
+            <button
+                type="button"
+                pButton
+                class="mt-2 w-full !bg-gradient-to-r !from-slate-900 !via-blue-950 !to-slate-900 hover:!from-slate-800 hover:!to-blue-900 !text-white !font-semibold !border-none shadow-md shadow-slate-400/40 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 py-3 rounded-xl"
+                (click)="submit()"
+            >
+                Register
+            </button>
+        </div>
+    </div>
+</div>
